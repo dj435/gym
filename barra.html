@@ -121,8 +121,9 @@ button:disabled {
         </div>
         <div class="input-group">
             <label>Tiempo por repetición (segundos): </label>
-            <input type="number" id="tiempoRepeticion" value="2" min="1">
-        </div>
+         <input type="number" id="tiempoRepeticion" name="tiempoRepeticion" min="2" value="2" oninput="validarTiempoRepeticion()">
+
+         </div>
         <div class="gif-container">
             <img id="ejercicioImg" src="barra/01.jpg" alt="Curl con Barra" width="250">
         </div>
@@ -134,6 +135,15 @@ button:disabled {
 
     <script>
 	
+function validarTiempoRepeticion() {
+    let tiempoRepeticionInput = document.getElementById("tiempoRepeticion");
+
+    // Si el valor es menor que 2, lo ajustamos a 2
+    if (parseInt(tiempoRepeticionInput.value) < 2) {
+        tiempoRepeticionInput.value = 2;
+    }
+}
+
 function iniciarTabata() {
     document.getElementById('iniciarBtn').disabled = true;
 
@@ -158,12 +168,16 @@ function iniciarTabata() {
     audio.play()
         .then(() => {
             console.log("Reproduciendo: ejercicio_comienza.mp3");
-            // Darle tiempo al archivo para que se reproduzca
             setTimeout(iniciarCuentaRegresiva, audio.duration * 1000); // Esperar duración del audio antes de continuar
         })
         .catch((error) => {
             console.error("Error al reproducir el audio:", error);
         });
+
+
+
+
+
 
    function iniciarCuentaRegresiva() {
     let numero = 5; // Iniciar desde 5 en lugar de 1
@@ -362,5 +376,4 @@ function iniciarCuentaRegresivaDescanso(tiempoDescanso, gifContainer) {
     </script>
 </body>
 </html>
-
 
