@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabata Entrenamiento</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background: linear-gradient(to right, #f0f0f0, #c9c9c9);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid black;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+		
+        h2 {
+            font-size: 20px;
+            font-family: "Arial Black", Gadget, sans-serif;
+            color: white;
+            -webkit-text-stroke: 1px black;
+            text-transform: uppercase;
+            margin-bottom: 1px;
+            margin-top: 1px;
+            background-color: red;
+            border: 4px ridge white;
+            border-radius: 5px;
+            padding: 5px 2px;
+            text-shadow: 3px 3px 1px rgba(0,0,0,0.8);
+
+        }
+        .input-group {
+            margin: 10px 0;
+        }
+        input {
+            width: 60px;
+            text-align: center;
+        }
+        .gif-container {
+		background-color: #ffff;
+            margin: 10px 0;
+            border: 1px solid black;
+			filter: saturate(200%);
+		
+        }
+        button {
+  min-width: 120px;
+  height: 40px;
+  color: #fff;
+  padding: 5px 10px;
+  font-weight: bold;
+  cursor: pointer;
+  position: relative;
+  display: inline-block;
+  outline: none;
+  border-radius: 5px;
+   border: 1px solid Black;
+  box-shadow:inset 2px 2px 2px 0px rgba(255,255,255,.5), 7px 7px 20px 0px rgba(0,0,0,.1), 4px 4px 5px 0px rgba(0,0,0,.1);
+  background: red;
+
+}
+button:disabled {
+            background: gray;
+			border: 1px solid Black;
+            cursor: not-allowed;
+        }
+		#contador {
+            font-family: "Arial", sans-serif; /* Tipo de letra */
+            font-size: 20px; /* Tamaño de la fuente */
+            color: yellow; /* Color verde */
+            font-weight: bold; /* Negrita */
+            margin-top: 5px;
+			background: Black;
+            animation: pulse 1s infinite alternate;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+		color: white;
+		background: Black;
+    }
+    100% {
+        transform: scale(1.01);
+        opacity: 0.9;
+		color: green;
+    }
+}
+		
+    </style>
+</head>
+<body>
+
+<audio id="musicaFondo" autoplay loop>
+  <source src="audio/musica_fondo.mp3" type="audio/mp3">
+  Tu navegador no soporta el elemento de audio.
+</audio>
+
+    <div class="container">
+        <h2>PLANCHA</h2>
+        <div class="input-group">
+            <label>Descanso (segundos): </label>
+            <input type="number" id="descanso" value="10" min="1">
+        </div>
+        <div class="input-group">
+            <label>Series: </label>
+            <input type="number" id="series" value="3" min="1">
+        </div>
+        <div class="input-group">
+              <label>Repeticiones: </label>
+        <input type="number" id="repeticiones" value="1" min="1" max="1" readonly>
+        </div>
+
+            <div class="input-group">
+              <label>Tiempo por repetición (segundos): </label>
+             <input type="number" id="tiempoRepeticion" name="tiempoRepeticion" min="20" value="20" oninput="validarTiempoRepeticion()">
+          </div>
+		 
+        <div class="gif-container">
+            <img id="ejercicioImg" src="plancha/01.jpg" alt="Curl con Barra" width="250">
+        </div>
+        <button id="iniciarBtn" onclick="iniciarTabata()">INICIAR</button>
+        <h3 id="contador"></h3>
+        <audio id="audio"></audio>
+		
+    </div>
+
+    <script>
+	
+function validarTiempoRepeticion() {
+    let tiempoRepeticionInput = document.getElementById("tiempoRepeticion");
+
+    // Si el valor es menor que 2, lo ajustamos a 2
+    if (parseInt(tiempoRepeticionInput.value) < 2) {
+        tiempoRepeticionInput.value = 2;
+    }
+}
+
+function iniciarTabata() {
+    document.getElementById('iniciarBtn').disabled = true;
+
+    let descanso = validarNumero("descanso");
+    let series = validarNumero("series");
+    let repeticiones = validarNumero("repeticiones");
+    let tiempoRepeticion = validarNumero("tiempoRepeticion");
+
+    if (descanso === null || series === null || repeticiones === null || tiempoRepeticion === null) {
+        alert("Por favor, ingresa valores válidos mayores a 0.");
+        document.getElementById('iniciarBtn').disabled = false;
+        return;
+    }
+
+    let contadorTexto = document.getElementById('contador');
+    let ejercicioImg = document.getElementById('ejercicioImg');
+    let serieActual = 1;
+
+    // Reproducir el audio de "ejercicio comienza" y esperar a que termine antes de la cuenta regresiva.
+    let audio = document.getElementById("audio");
+    audio.src = "audio/ejercicio_comienza.mp3";
+    audio.play()
+        .then(() => {
+            console.log("Reproduciendo: ejercicio_comienza.mp3");
+            setTimeout(iniciarCuentaRegresiva, audio.duration * 1000); // Esperar duración del audio antes de continuar
+        })
+        .catch((error) => {
+            console.error("Error al reproducir el audio:", error);
+        });
+
+
+
+
+
+
+   function iniciarCuentaRegresiva() {
+    let numero = 5; // Iniciar desde 5 en lugar de 1
+
+    function reproducirSiguiente() {
+        if (numero < 1) {
+            iniciarSerie(); // Comienza el entrenamiento después de la cuenta regresiva
+            return;
+        }
+
+        audio.src = `audio/${numero}.mp3`;
+        audio.play().then(() => {
+            console.log(`Reproduciendo: ${numero}.mp3`);
+            numero--; // Ahora disminuye en lugar de aumentar
+            setTimeout(reproducirSiguiente, 1000); // Espera 1 segundo antes del siguiente número
+        }).catch((error) => {
+            console.error("Error al reproducir el audio:", error);
+        });
+    }
+
+    reproducirSiguiente();
+}
+
+
+function iniciarSerie() {
+    if (serieActual > series) {
+        contadorTexto.innerText = "¡Entrenamiento finalizado!";
+        document.getElementById('iniciarBtn').disabled = false;
+        reproducirFinalizado(); // Reproducir el audio de finalización del entrenamiento
+        return;
+    }
+
+    // Mostrar la información de la serie actual y las restantes
+    contadorTexto.innerText = `Serie ${serieActual} de ${series}: ${repeticiones} repeticiones restantes`;
+
+    // Reproducir los audios solo al comenzar la primera serie.
+    if (serieActual === 1) {
+        realizarRepeticiones(0);
+    } else {
+        realizarRepeticiones(0);
+    }
+}
+
+function realizarRepeticiones(repeticionActual) {
+    if (repeticionActual >= repeticiones) {
+        serieActual++;
+        if (serieActual <= series) {
+            iniciarDescanso();
+        } else {
+            contadorTexto.innerText = "¡Entrenamiento finalizado!";
+            document.getElementById('iniciarBtn').disabled = false;
+            reproducirFinalizado(); // Reproducir el audio de finalización del entrenamiento
+        }
+        return;
+    }
+
+    // Actualizar el contador de repeticiones restantes
+contadorTexto.innerHTML = `SERIE ${serieActual} DE ${series}<br>REPETICION ${repeticionActual + 1} DE ${repeticiones}`;
+
+reproducirAnimacion(tiempoRepeticion, () => {
+    realizarRepeticiones(repeticionActual + 1);
+    });
+}
+
+
+
+function iniciarDescanso() {
+    let audio = document.getElementById("audio");
+    let descansoTiempo = validarNumero("descanso");
+    let gifContainer = document.querySelector(".gif-container");
+
+    // 1. Reproducir "descanso.mp3"
+    audio.src = "audio/descanso.mp3";
+    audio.play()
+        .then(() => {
+            console.log("Reproduciendo: descanso.mp3");
+
+            // 2. Esperar la duración de "descanso.mp3" antes de continuar
+            setTimeout(() => {
+                // 3. Reproducir el número del tiempo de descanso (ej. "30.mp3")
+                audio.src = `audio/${descansoTiempo}.mp3`;
+                audio.play()
+                    .then(() => {
+                        console.log(`Reproduciendo: ${descansoTiempo}.mp3`);
+
+                        // 4. Esperar la duración del número antes de "segundos.mp3"
+                        setTimeout(() => {
+                            audio.src = "audio/segundos.mp3";
+                            audio.play()
+                                .then(() => {
+                                    console.log("Reproduciendo: segundos.mp3");
+
+                                    // 5. PAUSA de 1 segundo después de "segundos.mp3"
+                                    setTimeout(() => {
+                                        iniciarCuentaRegresivaDescanso(descansoTiempo, gifContainer);
+                                    }, 1000); // Pausa antes de la cuenta regresiva
+
+                                }).catch((error) => console.error("Error al reproducir segundos.mp3", error));
+                        }, audio.duration * 1000);
+
+                    }).catch((error) => console.error(`Error al reproducir ${descansoTiempo}.mp3`, error));
+            }, audio.duration * 1000);
+        })
+        .catch((error) => console.error("Error al reproducir descanso.mp3", error));
+}
+
+function iniciarCuentaRegresivaDescanso(tiempoDescanso, gifContainer) {
+    let audio = document.getElementById("audio");
+    let descansoNumero = tiempoDescanso;
+
+    let countdownOverlay = document.createElement("div");
+    countdownOverlay.style.position = "absolute";
+    countdownOverlay.style.top = "0";
+    countdownOverlay.style.left = "0";
+    countdownOverlay.style.width = "100%";
+    countdownOverlay.style.height = "100%";
+    countdownOverlay.style.display = "flex";
+    countdownOverlay.style.alignItems = "center";
+    countdownOverlay.style.justifyContent = "center";
+    countdownOverlay.style.fontSize = "150px";
+    countdownOverlay.style.color = "red";
+    countdownOverlay.style.background = "rgba(0, 0, 0, 0.5)";
+    countdownOverlay.style.fontWeight = "bold";
+    countdownOverlay.style.textShadow = "0 1px 0 #CCCCCC, 0 2px 0 #c9c9c9, 0 3px 0 #bbb, 0 4px 0 #b9b9b9, 0 5px 0 #aaa, 0 6px 1px rgba(0,0,0,.1), 0 0 5px rgba(0,0,0,.1), 0 1px 3px rgba(0,0,0,.3), 0 3px 5px rgba(0,0,0,.2), 0 5px 10px rgba(0,0,0,.7), 0 10px 10px rgba(0,0,0,.8), 0 10px 10px rgba(0,0,0,.9)";
+    countdownOverlay.style.zIndex = "10";
+    gifContainer.appendChild(countdownOverlay);
+
+    function reproducirCuentaDescanso() {
+        if (descansoNumero <= 0) {
+            // Reproducir "trabajo.mp3" antes de comenzar la serie
+            audio.src = "audio/trabajo.mp3";
+            audio.play()
+                .then(() => {
+                    console.log("Reproduciendo: trabajo.mp3");
+                    setTimeout(() => {
+                        iniciarSerie();
+                        countdownOverlay.remove();
+                    }, audio.duration * 1000); // Esperar la duración del audio antes de iniciar la serie
+                })
+                .catch((error) => console.error("Error al reproducir trabajo.mp3:", error));
+            return;
+        }
+
+        countdownOverlay.innerHTML = descansoNumero;
+
+        audio.src = `audio/${descansoNumero}.mp3`;
+        audio.play().then(() => {
+            console.log(`Reproduciendo descanso: ${descansoNumero}.mp3`);
+            descansoNumero--;
+            setTimeout(reproducirCuentaDescanso, 1000);
+        }).catch((error) => {
+            console.error("Error al reproducir el audio de descanso:", error);
+        });
+    }
+
+    reproducirCuentaDescanso();
+}
+
+
+function reproducirAnimacion(tiempoRepeticion, callback) {
+    let frame = 1;
+    let totalFrames = 23;
+    let intervalo = (tiempoRepeticion * 1000) / totalFrames;
+
+    // Paso 1: Mostrar las imágenes de 01.jpg a 12.jpg inmediatamente durante los primeros 2 segundos.
+    let mostrarPrimerosFrames = setInterval(() => {
+        if (frame > 12) {
+            clearInterval(mostrarPrimerosFrames); // Detener la animación después de las 12 primeras imágenes
+            // Congelar la imagen 13 hasta que falten 2 segundos para el final
+            ejercicioImg.src = `plancha/13.jpg`;
+        } else {
+            ejercicioImg.src = `plancha/${String(frame).padStart(2, '0')}.jpg`;
+        }
+        frame++;
+    }, 80); // Los primeros 2 segundos, cambiar de imagen cada 100ms
+
+    // Paso 2: Mostrar las imágenes 14.jpg a 23.jpg solo en los últimos 2 segundos
+    setTimeout(() => {
+        let frame2 = 14; // Comenzar desde la imagen 14
+        let mostrarSegundosFrames = setInterval(() => {
+            if (frame2 > 23) {
+                clearInterval(mostrarSegundosFrames); // Detener la animación después de la imagen 23
+                callback(); // Ejecutar la función de callback cuando termine la animación
+                return;
+            }
+            ejercicioImg.src = `plancha/${String(frame2).padStart(2, '0')}.jpg`;
+            frame2++;
+        }, 80); // Mantener un intervalo fijo para las últimas imágenes
+
+    }, tiempoRepeticion * 1000 - 1000); // Comienza el paso 2 2 segundos antes del final
+}
+
+
+   
+
+    function validarNumero(id) {
+        let valor = parseInt(document.getElementById(id).value);
+        return (isNaN(valor) || valor <= 0) ? null : valor;
+    }
+
+    function reproducirFinalizado() {
+        let audioFinalizado = new Audio("audio/entrenamiento_finalizado.mp3");
+        audioFinalizado.play()
+            .then(() => {
+                console.log("Reproduciendo: entrenamiento_finalizado.mp3");
+            })
+            .catch((error) => {
+                console.error("Error al reproducir el audio finalizado:", error);
+            });
+    }
+
+}
+
+    </script>
+</body>
+</html>
